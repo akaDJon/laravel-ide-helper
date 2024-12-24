@@ -49,9 +49,20 @@ namespace <?= $namespace == '__root' ? '' : trim($namespace, '\\') ?> {
 <?php foreach ($namespaces_by_alias_ns as $namespace => $aliases) : ?>
 namespace <?= $namespace == '__root' ? '' : trim($namespace, '\\') ?> {
     <?php foreach ($aliases as $alias) : ?>
+        <?php // IWAmod: Исправление генериков Eloquent ?>
+        <?php if ($alias->getExtendsNamespace() == '\Illuminate\Database\Eloquent'): ?>
+           /**
+            * @template TModel
+            */
+        <?php endif; ?>
         <?= $alias->getClassType() ?> <?= $alias->getShortName() ?> extends <?= $alias->getExtends() ?> {<?php if ($alias->getExtendsNamespace() == '\Illuminate\Database\Eloquent') : ?>
             <?php foreach ($alias->getMethods() as $method) : ?>
-                <?= trim($method->getDocComment('            ')) ?>
+                <?php //trim($method->getDocComment('            ')) ?>
+                <?php // IWAmod: Исправление имен классов в _ide_helper.php и генериков Eloquent ?>
+                <?php $str = trim($method->getDocComment('            ')); ?>
+                <?php $str = str_replace(['\Illuminate\Database\Eloquent\TModel', '\Illuminate\Database\Eloquent\TValue', '\Illuminate\Database\Eloquent\TModelValue', 'TValue'], 'TModel', $str); ?>
+                <?php $str = str_replace(['\Illuminate\Database\Eloquent\static'], 'static', $str); ?>
+                <?= $str ?>
             public static function <?= $method->getName() ?>(<?= $method->getParamsWithDefault() ?>)
             {<?php if ($method->getDeclaringClass() !== $method->getRoot()) : ?>
                 //Method inherited from <?= $method->getDeclaringClass() ?>

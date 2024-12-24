@@ -649,10 +649,19 @@ class ModelsCommand extends Command
                 } elseif (in_array($method, ['query', 'newQuery', 'newModelQuery'])) {
                     $builder = $this->getClassNameInDestinationFile($model, get_class($model->newModelQuery()));
 
+                    /* IWAmod >>> */
+                    // Исправление query()
+                    $this->setMethod(
+                        $method,
+                        $this->getClassNameInDestinationFile($model, get_class($model))
+                    );
+                    /* IWAmod >>>
+
                     $this->setMethod(
                         $method,
                         $builder . '<static>|' . $this->getClassNameInDestinationFile($model, get_class($model))
                     );
+                    <<< IWAmod */
 
                     if ($this->write_model_external_builder_methods) {
                         $this->writeModelExternalBuilderMethods($model);
@@ -1029,7 +1038,9 @@ class ModelsCommand extends Command
                 }
             }
 
-            $phpdoc->appendTag(Tag::createInstance('@mixin ' . $eloquentClassNameInModel, $phpdoc));
+            // В модели добавляем генерик @mixin \Eloquent<ClassnameModel>
+            // для того чтобы работал template TModel в _ide_helper.php
+            $phpdoc->appendTag(Tag::createInstance('@mixin ' . $eloquentClassNameInModel . "<{$classname}>", $phpdoc));
         }
 
         if ($this->phpstorm_noinspections) {
@@ -1561,12 +1572,27 @@ class ModelsCommand extends Command
         foreach ($newMethodsFromNewBuilder as $builderMethod) {
             $reflection = new \ReflectionMethod($fullBuilderClass, $builderMethod);
             $args = $this->getParameters($reflection);
+            /* IWAmod >>> */
+            // указываем нормальные возвращаемые типы
+            $return = $this->getReturnType($reflection);
 
+            if (!isset($return)) {
+              $type = $builderClassBasedOnFQCNOption . '|' . $this->getClassNameInDestinationFile($model, get_class($model));
+            } else {
+              $type = $return;
+            }
+            $this->setMethod(
+                $builderMethod,
+                $type,
+                $args
+            );
+            /* IWAmod >>>
             $this->setMethod(
                 $builderMethod,
                 $builderClassBasedOnFQCNOption . '<static>|' . $this->getClassNameInDestinationFile($model, get_class($model)),
                 $args
             );
+            <<< IWAmod */
         }
     }
 
