@@ -123,6 +123,7 @@ return [
 
     'helper_files' => [
         base_path() . '/vendor/laravel/framework/src/Illuminate/Support/helpers.php',
+        base_path() . '/vendor/laravel/framework/src/Illuminate/Foundation/helpers.php',
     ],
 
     /*
@@ -332,6 +333,20 @@ return [
     */
     'post_migrate' => [
         // 'ide-helper:models --nowrite',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Macroable Traits
+    |--------------------------------------------------------------------------
+    |
+    | Define which traits should be considered capable of adding Macro.
+    | You can add any custom trait that behaves like the original Laravel one.
+    |
+    */
+    'macroable_traits' => [
+        Filament\Support\Concerns\Macroable::class,
+        Spatie\Macroable\Macroable::class,
     ],
 
 ];

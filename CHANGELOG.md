@@ -1,5 +1,92 @@
 # Changelog
 
+## v3.5.4 - 2025-01-14
+
+### What's Changed
+
+* Convert auth() helper to use Auth facade by @barryvdh in https://github.com/barryvdh/laravel-ide-helper/pull/1656
+* Check if returnType from docblock is not null by @barryvdh in https://github.com/barryvdh/laravel-ide-helper/pull/1658
+
+**Full Changelog**: https://github.com/barryvdh/laravel-ide-helper/compare/v3.5.3...v3.5.4
+
+## v3.5.3 - 2025-01-08
+
+### What's Changed
+
+* Catch meta, tweak auth by @barryvdh in https://github.com/barryvdh/laravel-ide-helper/pull/1654
+* Check if macro is valid by @barryvdh in https://github.com/barryvdh/laravel-ide-helper/pull/1655
+* feat: use generics of return type to determine resulting models by @Bloemendaal in https://github.com/barryvdh/laravel-ide-helper/pull/1653
+
+### New Contributors
+
+* @Bloemendaal made their first contribution in https://github.com/barryvdh/laravel-ide-helper/pull/1653
+
+**Full Changelog**: https://github.com/barryvdh/laravel-ide-helper/compare/v3.5.2...v3.5.3
+
+## v3.5.2 - 2025-01-06
+
+### Fixes
+
+Fix empty/anonymous closure in meta command.
+
+**Full Changelog**: https://github.com/barryvdh/laravel-ide-helper/compare/v3.5.1...v3.5.2
+
+## v3.5.1 - 2025-01-06
+
+### What's Changed
+
+* Remove duplicate config, fix ->can() by @barryvdh in https://github.com/barryvdh/laravel-ide-helper/pull/1650
+
+**Full Changelog**: https://github.com/barryvdh/laravel-ide-helper/compare/v3.5.0...v3.5.1
+
+## v3.5.0 - 2025-01-06
+
+### What's Changed
+
+* Add phpstorm meta argument hints by @barryvdh in https://github.com/barryvdh/laravel-ide-helper/pull/1640
+* Add meta override for user return types by @barryvdh in https://github.com/barryvdh/laravel-ide-helper/pull/1642
+* Use forked ContextFactory by @barryvdh in https://github.com/barryvdh/laravel-ide-helper/pull/1643
+* Remove php parser by @barryvdh in https://github.com/barryvdh/laravel-ide-helper/pull/1644
+* Also add eloquent template tags from base class by @barryvdh in https://github.com/barryvdh/laravel-ide-helper/pull/1645
+* Add more metadata by @barryvdh in https://github.com/barryvdh/laravel-ide-helper/pull/1646
+* Fixed generating PHPDoc for methods with class templates by @chack1172 in https://github.com/barryvdh/laravel-ide-helper/pull/1647
+* Feat guess macro types by @barryvdh in https://github.com/barryvdh/laravel-ide-helper/pull/1648
+* Allow adding custom Macroable classes. by @mathieutu in https://github.com/barryvdh/laravel-ide-helper/pull/1629
+* Add special `dev` to composer keywords by @jnoordsij in https://github.com/barryvdh/laravel-ide-helper/pull/1649
+
+### New Contributors
+
+* @chack1172 made their first contribution in https://github.com/barryvdh/laravel-ide-helper/pull/1647
+* @mathieutu made their first contribution in https://github.com/barryvdh/laravel-ide-helper/pull/1629
+* @jnoordsij made their first contribution in https://github.com/barryvdh/laravel-ide-helper/pull/1649
+
+**Full Changelog**: https://github.com/barryvdh/laravel-ide-helper/compare/v3.4.0...v3.5.0
+
+## v3.4.0 - 2024-12-29
+
+### What's Changed
+
+* fix: add @template TModel of static for Eloquent by @imzyf in https://github.com/barryvdh/laravel-ide-helper/pull/1631
+* Add templates to Eloquent by @barryvdh in https://github.com/barryvdh/laravel-ide-helper/pull/1634
+* Update testsuite for Generator, simplify service provider and mock by @barryvdh in https://github.com/barryvdh/laravel-ide-helper/pull/1635
+* Add option for only eloquent by @barryvdh in https://github.com/barryvdh/laravel-ide-helper/pull/1636
+* Add weak generics for array type objects by @LauJosefsen in https://github.com/barryvdh/laravel-ide-helper/pull/1621
+* Make all "note" in README apply quote style by @hms5232 in https://github.com/barryvdh/laravel-ide-helper/pull/1590
+* Update README.md by @Mtillmann in https://github.com/barryvdh/laravel-ide-helper/pull/1587
+* Rename view var  by @barryvdh and @pb30 in https://github.com/barryvdh/laravel-ide-helper/pull/1637 and https://github.com/barryvdh/laravel-ide-helper/pull/1563
+* Format IDE helper by @barryvdh in https://github.com/barryvdh/laravel-ide-helper/pull/1638
+* Add TLDR section, update options by @barryvdh in https://github.com/barryvdh/laravel-ide-helper/pull/1639
+
+### New Contributors
+
+* @imzyf made their first contribution in https://github.com/barryvdh/laravel-ide-helper/pull/1631
+* @LauJosefsen made their first contribution in https://github.com/barryvdh/laravel-ide-helper/pull/1621
+* @hms5232 made their first contribution in https://github.com/barryvdh/laravel-ide-helper/pull/1590
+* @Mtillmann made their first contribution in https://github.com/barryvdh/laravel-ide-helper/pull/1587
+* @pb30 made their first contribution in https://github.com/barryvdh/laravel-ide-helper/pull/1563
+
+**Full Changelog**: https://github.com/barryvdh/laravel-ide-helper/compare/v3.3.0...v3.4.0
+
 ## v3.3.0 - 2024-12-18
 
 ### What's Changed
@@ -55,8 +142,12 @@
 
 ### Changed
 
+- Update view "version" variable name to avoid potential conflicts
+  
 - Add support for EloquentBuilder generics introduced in Laravel 11.15.
+  
 - Drop support for Laravel versions earlier than 11.15.
+  
 
 ### Added
 
