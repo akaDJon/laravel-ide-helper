@@ -1640,11 +1640,40 @@ class ModelsCommand extends Command
             $reflection = new \ReflectionMethod($fullBuilderClass, $builderMethod);
             $args = $this->getParameters($reflection);
 
+            /* IWAmod >>> */
+            // указываем нормальные возвращаемые типы
+            /*
+ * @method static \App\IWAsys\Bases\Models\Extension\ExtensionEloquentBuilder<static>|BaseModelOld findAndGetTitle(?mixed $id, string $default = '???')                                                                                   =>  * @method static string findAndGetTitle(?mixed $id, string $default = '???')
+ * @method static \App\IWAsys\Bases\Models\Extension\ExtensionEloquentBuilder<static>|BaseModelOld findMultiple(\Illuminate\Support\Collection|array|string|null $ids)                                                                    =>  * @method static \App\IWAsys\Bases\Models\Extension\ExtensionEloquentCollection<int, static> findMultiple(\Illuminate\Support\Collection|array|string|null $ids)
+ * @method static \App\IWAsys\Bases\Models\Extension\ExtensionEloquentBuilder<static>|BaseModelOld findMultipleAndGetArrayTitles(\Illuminate\Support\Collection|array|string|null $ids, string $default = '???', bool $keepOrder = false) =>  * @method static array findMultipleAndGetArrayTitles(\Illuminate\Support\Collection|array|string|null $ids, string $default = '???', bool $keepOrder = false)
+ * @method static \App\IWAsys\Bases\Models\Extension\ExtensionEloquentBuilder<static>|BaseModelOld findMultipleAndGetTitles(\Illuminate\Support\Collection|array|string|null $ids, string $default = '???', bool $keepOrder = false)      =>  * @method static string findMultipleAndGetTitles(\Illuminate\Support\Collection|array|string|null $ids, string $default = '???', bool $keepOrder = false)
+ * @method static \App\IWAsys\Bases\Models\Extension\ExtensionEloquentBuilder<static>|BaseModelOld keyedCacheDisable()                                                                                                                    =>  * @method static static keyedCacheDisable()
+ * @method static \App\IWAsys\Bases\Models\Extension\ExtensionEloquentBuilder<static>|BaseModelOld keyedCacheEnable()                                                                                                                     =>  * @method static static keyedCacheEnable()
+ * @method static \App\IWAsys\Bases\Models\Extension\ExtensionEloquentBuilder<static>|BaseModelOld keyedCacheFlush(bool $all = false)                                                                                                     =>  * @method static static keyedCacheFlush(bool $all = false)
+ * @method static \App\IWAsys\Bases\Models\Extension\ExtensionEloquentBuilder<static>|BaseModelOld staticCacheDisable()                                                                                                                   =>  * @method static static staticCacheDisable()
+ * @method static \App\IWAsys\Bases\Models\Extension\ExtensionEloquentBuilder<static>|BaseModelOld staticCacheEnable()                                                                                                                    =>  * @method static static staticCacheEnable()
+ * @method static \App\IWAsys\Bases\Models\Extension\ExtensionEloquentBuilder<static>|BaseModelOld staticCacheFlush(bool $all = false)                                                                                                    =>  * @method static static staticCacheFlush(bool $all = false)
+ * @method static \App\IWAsys\Bases\Models\Extension\ExtensionEloquentBuilder<static>|BaseModelOld staticCacheIsEnable()                                                                                                                  =>  * @method static bool staticCacheIsEnable()
+             */
+            $return = $this->getReturnType($reflection);
+
+            if (!isset($return)) {
+              $type = $builderClassBasedOnFQCNOption . '|' . $this->getClassNameInDestinationFile($model, get_class($model));
+            } else {
+              $type = $return;
+            }
+            $this->setMethod(
+                $builderMethod,
+                $type,
+                $args
+            );
+            /* IWAmod >>>
             $this->setMethod(
                 $builderMethod,
                 $builderClassBasedOnFQCNOption . '<static>|' . $this->getClassNameInDestinationFile($model, get_class($model)),
                 $args
             );
+            <<< IWAmod */
         }
     }
 
