@@ -1076,7 +1076,17 @@ class ModelsCommand extends Command
                 }
             }
 
-            $phpdoc->appendTag(Tag::createInstance('@mixin ' . $eloquentClassNameInModel, $phpdoc));
+            /* IWAmod >>> */
+            // В модели добавляем генерик @mixin \Eloquent<ClassnameModel>
+            // для того чтобы работал template TModel в _ide_helper.php
+            /*
+              @mixin \Eloquent =>  @mixin \Eloquent<BaseModelOld>
+             */
+            /*
+              @mixin \Eloquent =>  @mixin \Eloquent<CatBldgSportsModel>
+             */
+            $phpdoc->appendTag(Tag::createInstance('@mixin ' . $eloquentClassNameInModel . "<{$classname}>", $phpdoc));
+            /* <<< IWAmod */
         }
 
         if ($this->phpstorm_noinspections) {
