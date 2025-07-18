@@ -690,10 +690,29 @@ class ModelsCommand extends Command
                 } elseif (in_array($method, ['query', 'newQuery', 'newModelQuery'])) {
                     $builder = $this->getClassNameInDestinationFile($model, get_class($model->newModelQuery()));
 
+                    /* IWAmod >>> */
+                    // Исправление query()
+                    /*
+ * @method static \App\IWAsys\Bases\Models\Extension\ExtensionEloquentBuilder<static>|BaseModelOld newModelQuery() =>  * @method static BaseModelOld newModelQuery()
+ * @method static \App\IWAsys\Bases\Models\Extension\ExtensionEloquentBuilder<static>|BaseModelOld newQuery()      =>  * @method static BaseModelOld newQuery()
+ * @method static \App\IWAsys\Bases\Models\Extension\ExtensionEloquentBuilder<static>|BaseModelOld query()         =>  * @method static BaseModelOld query()
+                     */
+                    /*
+ * @method static \App\IWAsys\Bases\Models\Extension\ExtensionEloquentBuilder<static>|BuhCostListModel newModelQuery() =>  * @method static BuhCostListModel newModelQuery()
+ * @method static \App\IWAsys\Bases\Models\Extension\ExtensionEloquentBuilder<static>|BuhCostListModel newQuery()      =>  * @method static BuhCostListModel newQuery()
+ * @method static \App\IWAsys\Bases\Models\Extension\ExtensionEloquentBuilder<static>|BuhCostListModel query()         =>  * @method static BuhCostListModel query()
+                     */
+                    $this->setMethod(
+                        $method,
+                        $this->getClassNameInDestinationFile($model, get_class($model))
+                    );
+                    /* IWAmod >>>
+
                     $this->setMethod(
                         $method,
                         $builder . '<static>|' . $this->getClassNameInDestinationFile($model, get_class($model))
                     );
+                    <<< IWAmod */
 
                     if ($this->write_model_external_builder_methods) {
                         $this->writeModelExternalBuilderMethods($model);
