@@ -1,6 +1,6 @@
 {
     "name": "akadjon/laravel-ide-helper",
-    "version": "3.5.5.2",
+    "version": "3.6.1.1",
     "description": "Laravel IDE Helper, generates correct PHPDocs for all Facade classes, to improve auto-completion.",
     "license": "MIT",
     "keywords": [
