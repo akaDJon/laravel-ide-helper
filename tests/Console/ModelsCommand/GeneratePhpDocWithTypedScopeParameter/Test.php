@@ -2,21 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Barryvdh\LaravelIdeHelper\Tests\Console\ModelsCommand\RelationCountProperties;
+namespace Barryvdh\LaravelIdeHelper\Tests\Console\ModelsCommand\GeneratePhpDocWithTypedScopeParameter;
 
 use Barryvdh\LaravelIdeHelper\Console\ModelsCommand;
 use Barryvdh\LaravelIdeHelper\Tests\Console\ModelsCommand\AbstractModelsCommand;
 
 class Test extends AbstractModelsCommand
 {
-    protected function getEnvironmentSetUp($app)
-    {
-        parent::getEnvironmentSetUp($app);
-
-        $app['config']->set('ide-helper.write_model_relation_count_properties', false);
-        $app['config']->set('ide-helper.write_model_relation_exists_properties', false);
-    }
-
     public function test(): void
     {
         $command = $this->app->make(ModelsCommand::class);
