@@ -713,8 +713,9 @@ class ModelsCommand extends Command
                      */
                     // Базовый класс моделей (BaseModelOld) не получает query()/newQuery()/newModelQuery():
                     // эти @method наследуются всеми моделями без собственного docblock (в т.ч. тестовыми)
-                    // и подменяют тип query() у потомков.
-                    if (!is_a($model, 'App\IWAsys\Bases\Models\BaseModelOld')) {
+                    // и подменяют тип query() у потомков. Проверка по точному классу:
+                    // наследники (конкретные модели) эти методы получают.
+                    if (get_class($model) !== 'App\IWAsys\Bases\Models\BaseModelOld') {
                         $this->setMethod(
                             $method,
                             $this->getClassNameInDestinationFile($model, get_class($model))
