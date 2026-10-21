@@ -1790,57 +1790,114 @@ class ModelsCommand extends Command
 
     /* IWAmod >>> */
     /**
-     * Подстановка generic-типа массива из @param docblock в тип параметра.
+     * Подстановка generic-типа из @param docblock в тип параметра.
      *
-     * Native-сигнатура метода содержит только bare array, тогда как @param в docblock
-     * может уточнять его как array<int|string, mixed>. Без этой подстановки generic
-     * теряется при генерации @method-сигнатур.
+     * Native-сигнатура метода содержит только bare array/Collection, тогда как @param в docblock
+     * может уточнять их как array<int|string, mixed> / Collection<int|string, mixed>.
+     * Без этой подстановки generic теряется при генерации @method-сигнатур.
      */
     protected function applyDocBlockGenericToParamType(\ReflectionMethod $method, \ReflectionParameter $parameter, string $type): string
     {
-        $generic = $this->getDocBlockGenericArrayType($method, $parameter->getName());
+        $docBlockTypes = $this->getDocBlockParamTypes($method, $parameter->getName());
 
-        if ($generic === null) {
+        if ($docBlockTypes === []) {
             return $type;
         }
 
         $types = explode('|', $type);
 
         foreach ($types as $key => $currentType) {
-            if ($currentType === 'array' || $currentType === 'mixed[]') {
-                $types[$key] = $generic;
+            $generic = $this->findGenericTypeFor($currentType, $docBlockTypes);
 
-                return implode('|', $types);
+            if ($generic !== null) {
+                $types[$key] = $generic;
             }
         }
 
-        return $type;
+        return implode('|', $types);
     }
 
     /**
-     * Извлечение generic-типа массива (array<...>) из @param docblock метода.
+     * Типы из @param docblock метода (union разбит по верхнему уровню).
+     *
+     * @return string[]
      */
-    protected function getDocBlockGenericArrayType(\ReflectionMethod $method, string $parameterName): ?string
+    protected function getDocBlockParamTypes(\ReflectionMethod $method, string $parameterName): array
     {
         $docComment = $method->getDocComment();
 
         if (!$docComment) {
-            return null;
+            return [];
         }
 
         $pattern = '/@param\s+(.+?)\s+\$?' . preg_quote($parameterName, '/') . '\b/';
 
         if (!preg_match($pattern, $docComment, $matches)) {
+            return [];
+        }
+
+        return $this->splitUnionTypes(trim($matches[1]));
+    }
+
+    /**
+     * Поиск generic-типа среди docblock-типов для указанного native-типа.
+     *
+     * @param  string[]  $docBlockTypes
+     */
+    protected function findGenericTypeFor(string $nativeType, array $docBlockTypes): ?string
+    {
+        $nativeName = $this->getTypeBaseName($nativeType);
+
+        if ($nativeName === '') {
             return null;
         }
 
-        foreach ($this->splitUnionTypes(trim($matches[1])) as $currentType) {
-            if (preg_match('/^array<.+>$/s', $currentType)) {
-                return $currentType;
+        foreach ($docBlockTypes as $docBlockType) {
+            if (strpos($docBlockType, '<') === false) {
+                continue;
             }
+
+            if ($this->getTypeBaseName($docBlockType) !== $nativeName) {
+                continue;
+            }
+
+            // Для array-синтаксиса (mixed[]) берём docblock-тип как есть,
+            // для классов — FQCN из native-сигнатуры и generic-аргументы из docblock
+            if (str_ends_with($nativeType, '[]')) {
+                return $docBlockType;
+            }
+
+            $arguments = substr($docBlockType, (int) strpos($docBlockType, '<'));
+
+            return $nativeType . $arguments;
         }
 
         return null;
+    }
+
+    /**
+     * Короткое имя типа без generic-аргументов и без ведущего бэкслеша.
+     */
+    protected function getTypeBaseName(string $type): string
+    {
+        $type = trim($type);
+
+        if (($position = strpos($type, '<')) !== false) {
+            $type = substr($type, 0, $position);
+        }
+
+        $type = ltrim($type, '\\');
+
+        if (($position = strrpos($type, '\\')) !== false) {
+            $type = substr($type, $position + 1);
+        }
+
+        // mixed[] — отдельный синтаксис массива
+        if (str_ends_with($type, '[]')) {
+            $type = 'array';
+        }
+
+        return $type;
     }
 
     /**
