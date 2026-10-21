@@ -1656,9 +1656,9 @@ class ModelsCommand extends Command
             // указываем нормальные возвращаемые типы
             /*
  * @method static \App\IWAsys\Bases\Models\Extension\ExtensionEloquentBuilder<static>|BaseModelOld findAndGetTitle(?mixed $id, string $default = '???')                                                                                   =>  * @method static string findAndGetTitle(?mixed $id, string $default = '???')
- * @method static \App\IWAsys\Bases\Models\Extension\ExtensionEloquentBuilder<static>|BaseModelOld findMultiple(\Illuminate\Support\Collection|array|string|null $ids)                                                                    =>  * @method static \App\IWAsys\Bases\Models\Extension\ExtensionEloquentCollection<int, static> findMultiple(\Illuminate\Support\Collection|array|string|null $ids)
- * @method static \App\IWAsys\Bases\Models\Extension\ExtensionEloquentBuilder<static>|BaseModelOld findMultipleAndGetArrayTitles(\Illuminate\Support\Collection|array|string|null $ids, string $default = '???', bool $keepOrder = false) =>  * @method static array findMultipleAndGetArrayTitles(\Illuminate\Support\Collection|array|string|null $ids, string $default = '???', bool $keepOrder = false)
- * @method static \App\IWAsys\Bases\Models\Extension\ExtensionEloquentBuilder<static>|BaseModelOld findMultipleAndGetTitles(\Illuminate\Support\Collection|array|string|null $ids, string $default = '???', bool $keepOrder = false)      =>  * @method static string findMultipleAndGetTitles(\Illuminate\Support\Collection|array|string|null $ids, string $default = '???', bool $keepOrder = false)
+ * @method static \App\IWAsys\Bases\Models\Extension\ExtensionEloquentBuilder<static>|BaseModelOld findMultiple(\Illuminate\Support\Collection|array<int|string, mixed>|string|null $ids)                                                                    =>  * @method static \App\IWAsys\Bases\Models\Extension\ExtensionEloquentCollection<int, static> findMultiple(\Illuminate\Support\Collection|array<int|string, mixed>|string|null $ids)
+ * @method static \App\IWAsys\Bases\Models\Extension\ExtensionEloquentBuilder<static>|BaseModelOld findMultipleAndGetArrayTitles(\Illuminate\Support\Collection|array<int|string, mixed>|string|null $ids, string $default = '???', bool $keepOrder = false) =>  * @method static array<int, string> findMultipleAndGetArrayTitles(\Illuminate\Support\Collection|array<int|string, mixed>|string|null $ids, string $default = '???', bool $keepOrder = false)
+ * @method static \App\IWAsys\Bases\Models\Extension\ExtensionEloquentBuilder<static>|BaseModelOld findMultipleAndGetTitles(\Illuminate\Support\Collection|array<int|string, mixed>|string|null $ids, string $default = '???', bool $keepOrder = false)      =>  * @method static string findMultipleAndGetTitles(\Illuminate\Support\Collection|array<int|string, mixed>|string|null $ids, string $default = '???', bool $keepOrder = false)
  * @method static \App\IWAsys\Bases\Models\Extension\ExtensionEloquentBuilder<static>|BaseModelOld keyedCacheDisable()                                                                                                                    =>  * @method static static keyedCacheDisable()
  * @method static \App\IWAsys\Bases\Models\Extension\ExtensionEloquentBuilder<static>|BaseModelOld keyedCacheEnable()                                                                                                                     =>  * @method static static keyedCacheEnable()
  * @method static \App\IWAsys\Bases\Models\Extension\ExtensionEloquentBuilder<static>|BaseModelOld keyedCacheFlush(bool $all = false)                                                                                                     =>  * @method static static keyedCacheFlush(bool $all = false)
@@ -1703,6 +1703,12 @@ class ModelsCommand extends Command
                     $type .= '|null';
                 }
             }
+
+            /* IWAmod >>> */
+            // Native-сигнатура не содержит generic (array), но @param в docblock может содержать
+            // array<int|string, mixed>. Восстанавливаем generic из docblock, иначе он теряется.
+            $type = $this->applyDocBlockGenericToParamType($method, $parameter, $type);
+            /* <<< IWAmod */
 
             return $type;
         }
@@ -1769,6 +1775,97 @@ class ModelsCommand extends Command
         // then we have found the type of the variable if not we return null
         return $type;
     }
+
+    /* IWAmod >>> */
+    /**
+     * Подстановка generic-типа массива из @param docblock в тип параметра.
+     *
+     * Native-сигнатура метода содержит только bare array, тогда как @param в docblock
+     * может уточнять его как array<int|string, mixed>. Без этой подстановки generic
+     * теряется при генерации @method-сигнатур.
+     */
+    protected function applyDocBlockGenericToParamType(\ReflectionMethod $method, \ReflectionParameter $parameter, string $type): string
+    {
+        $generic = $this->getDocBlockGenericArrayType($method, $parameter->getName());
+
+        if ($generic === null) {
+            return $type;
+        }
+
+        $types = explode('|', $type);
+
+        foreach ($types as $key => $currentType) {
+            if ($currentType === 'array' || $currentType === 'mixed[]') {
+                $types[$key] = $generic;
+
+                return implode('|', $types);
+            }
+        }
+
+        return $type;
+    }
+
+    /**
+     * Извлечение generic-типа массива (array<...>) из @param docblock метода.
+     */
+    protected function getDocBlockGenericArrayType(\ReflectionMethod $method, string $parameterName): ?string
+    {
+        $docComment = $method->getDocComment();
+
+        if (!$docComment) {
+            return null;
+        }
+
+        $pattern = '/@param\s+(.+?)\s+\$?' . preg_quote($parameterName, '/') . '\b/';
+
+        if (!preg_match($pattern, $docComment, $matches)) {
+            return null;
+        }
+
+        foreach ($this->splitUnionTypes(trim($matches[1])) as $currentType) {
+            if (preg_match('/^array<.+>$/s', $currentType)) {
+                return $currentType;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Разбиение union-типа по '|' с учётом generic-скобок (array<int|string, mixed>).
+     */
+    protected function splitUnionTypes(string $type): array
+    {
+        $types = [];
+        $current = '';
+        $depth = 0;
+
+        for ($i = 0, $length = strlen($type); $i < $length; $i++) {
+            $char = $type[$i];
+
+            if ($char === '<' || $char === '{' || $char === '(') {
+                $depth++;
+            } elseif ($char === '>' || $char === '}' || $char === ')') {
+                $depth--;
+            }
+
+            if ($char === '|' && $depth === 0) {
+                $types[] = trim($current);
+                $current = '';
+
+                continue;
+            }
+
+            $current .= $char;
+        }
+
+        if (trim($current) !== '') {
+            $types[] = trim($current);
+        }
+
+        return $types;
+    }
+    /* <<< IWAmod */
 
     protected function extractReflectionTypes(ReflectionType $reflection_type)
     {
