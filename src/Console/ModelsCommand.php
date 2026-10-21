@@ -1573,6 +1573,18 @@ class ModelsCommand extends Command
 
         $reflectionType = $this->getReturnTypeFromReflection($methodReflection);
 
+        /* IWAmod >>> */
+        // Native-сигнатура get() может содержать только bare array, тогда как @return в docblock
+        // уточняет тип как array<int|string, string>. Как и для @param, generic берём из docblock.
+        if ($reflectionType === 'array') {
+            $docBlockType = $this->getReturnTypeFromDocBlock($methodReflection);
+
+            if ($docBlockType !== null && preg_match('/^array<.+>$/s', $docBlockType)) {
+                $reflectionType = $docBlockType;
+            }
+        }
+        /* <<< IWAmod */
+
         if ($reflectionType === null) {
             $reflectionType = $this->getReturnTypeFromDocBlock($methodReflection);
         }
