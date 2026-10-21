@@ -697,15 +697,6 @@ class ModelsCommand extends Command
                         $this->setMethod($name, $builder . '<static>|' . $modelName, $args, $comment);
                     }
                 } elseif (in_array($method, ['query', 'newQuery', 'newModelQuery'])) {
-                    /* IWAmod >>> */
-                    // Базовый класс моделей (BaseModelOld) не получает query()/newQuery()/newModelQuery():
-                    // эти @method наследуются всеми моделями без собственного docblock (в т.ч. тестовыми)
-                    // и подменяют тип query() у потомков.
-                    if (is_a($model, 'App\IWAsys\Bases\Models\BaseModelOld')) {
-                        continue;
-                    }
-                    /* <<< IWAmod */
-
                     $builder = $this->getClassNameInDestinationFile($model, get_class($model->newModelQuery()));
 
                     /* IWAmod >>> */
@@ -720,10 +711,15 @@ class ModelsCommand extends Command
  * @method static \App\IWAsys\Bases\Models\Extension\ExtensionEloquentBuilder<static>|BuhCostListModel newQuery()      =>  * @method static BuhCostListModel newQuery()
  * @method static \App\IWAsys\Bases\Models\Extension\ExtensionEloquentBuilder<static>|BuhCostListModel query()         =>  * @method static BuhCostListModel query()
                      */
-                    $this->setMethod(
-                        $method,
-                        $this->getClassNameInDestinationFile($model, get_class($model))
-                    );
+                    // Базовый класс моделей (BaseModelOld) не получает query()/newQuery()/newModelQuery():
+                    // эти @method наследуются всеми моделями без собственного docblock (в т.ч. тестовыми)
+                    // и подменяют тип query() у потомков.
+                    if (!is_a($model, 'App\IWAsys\Bases\Models\BaseModelOld')) {
+                        $this->setMethod(
+                            $method,
+                            $this->getClassNameInDestinationFile($model, get_class($model))
+                        );
+                    }
                     /* IWAmod >>>
 
                     $this->setMethod(
