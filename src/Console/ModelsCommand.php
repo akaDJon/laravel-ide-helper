@@ -697,6 +697,15 @@ class ModelsCommand extends Command
                         $this->setMethod($name, $builder . '<static>|' . $modelName, $args, $comment);
                     }
                 } elseif (in_array($method, ['query', 'newQuery', 'newModelQuery'])) {
+                    /* IWAmod >>> */
+                    // Базовый класс моделей (BaseModelOld) не получает query()/newQuery()/newModelQuery():
+                    // эти @method наследуются всеми моделями без собственного docblock (в т.ч. тестовыми)
+                    // и подменяют тип query() у потомков.
+                    if (is_a($model, 'App\IWAsys\Bases\Models\BaseModelOld')) {
+                        continue;
+                    }
+                    /* <<< IWAmod */
+
                     $builder = $this->getClassNameInDestinationFile($model, get_class($model->newModelQuery()));
 
                     /* IWAmod >>> */
