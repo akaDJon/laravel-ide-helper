@@ -1581,11 +1581,12 @@ class ModelsCommand extends Command
 
         /* IWAmod >>> */
         // Native-сигнатура get() может содержать только bare array, тогда как @return в docblock
-        // уточняет тип как array<int|string, string>. Как и для @param, generic берём из docblock.
+        // уточняет тип как array<int|string, string>, list<string> или non-empty-list<string>.
+        // Как и для @param, generic берём из docblock.
         if ($reflectionType === 'array') {
             $docBlockType = $this->getReturnTypeFromDocBlock($methodReflection);
 
-            if ($docBlockType !== null && preg_match('/^array<.+>$/s', $docBlockType)) {
+            if ($docBlockType !== null && preg_match('/^(?:array|list|non-empty-list)<.+>$/s', $docBlockType)) {
                 $reflectionType = $docBlockType;
             }
         }
